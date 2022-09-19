@@ -56,7 +56,43 @@ To check the IP source address ```ip.src``` and change the IP src = ```ip.src="1
 With the TTL, source address, and destination address populated, remove the TTL and set it to the default TTL 
 ```del(ip.ttl)```
 
+![image](https://user-images.githubusercontent.com/79100627/190933514-a30085da-3f99-44a9-b689-e7588c09c351.png)
+
+Verify TTL with the RFC value of 64 ```ip.ttl```
+![image](https://user-images.githubusercontent.com/79100627/190933538-9e7aa287-1fec-4a09-a2da-dc45d02c15b1.png)
+
+Add additional protocol lyaer by adding TCP of top ```ip/TCP()```
+![image](https://user-images.githubusercontent.com/79100627/190933578-8943419e-ce4e-4c65-b7d5-1199a8824d6c.png)
+
+Analyze the TCP header from the RFC 793
+![image](https://user-images.githubusercontent.com/79100627/190933611-2d8d93a0-b7f0-412c-94f5-b312e28c5ee4.png)
+
+Add some information to the TCP protocol fields ```tcp=TCP(sport=1025, dport=80)```
+![image](https://user-images.githubusercontent.com/79100627/190933669-3b2d523f-49ab-4043-9bf6-48c13e145f78.png)
+
+Show the TCP stack ```(tcp/ip).show()```
+![image](https://user-images.githubusercontent.com/79100627/190933699-8b3990c6-3d83-4a33-806e-a0fb5b50235b.png)
+
+Add an Ethernet Layer ```Ether()/ip```
+![image](https://user-images.githubusercontent.com/79100627/190933722-6b8e18f2-d232-4193-a604-b109950581d8.png)
+
+## Sending Crafted Packets 
+
+Open New Terminal with ```wireshark``` 
+
+Within the Wireshark window, select the eth0 interface from the Capture panel and press CTRL+E to start capturing 
+![image](https://user-images.githubusercontent.com/79100627/190933783-6a268f79-32c7-4c7d-9e7d-a7f82ddb275d.png)
+
+Back to the Scapy Terminal and generate a single ICMP packet to be sent to the OWASP machine (```packet=sr1(IP(dst="192.168.68.12")/ICMP()/"XXXXXXXXXXX"```)
+![image](https://user-images.githubusercontent.com/79100627/190933868-40306f9f-3f9e-434b-9f6f-7d44a795a5ed.png)
+
+![image](https://user-images.githubusercontent.com/79100627/190933917-e5f07bf1-eb29-4f2a-b549-2a1647c44056.png)
+
+To check the packet you have created ```packet``` 
+![image](https://user-images.githubusercontent.com/79100627/190933943-e42dea55-45dd-4662-a0a0-cd8136be16db.png)
+
+simple SYN scan on a single port ```packet=sr1(IP(dst="192.168.68.12")/TCP(dport=80,flags="S"))```
+![image](https://user-images.githubusercontent.com/79100627/190934000-bac34c3e-0f05-480c-af00-52a64fef3ff0.png)
 
 
-
-
+![image](https://user-images.githubusercontent.com/79100627/190934018-4372509b-bfe7-4fbf-874c-ef4c585d1b1e.png)
