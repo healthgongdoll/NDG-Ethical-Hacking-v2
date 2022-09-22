@@ -96,6 +96,84 @@ The option ```--script=banner``` erfers to the technique used to gain informatio
 going back to the diagram, we can determine that results of the scan s for the network 192.168.68.0/24 coincides with the network diagram for this lab, as seen in the diagram below. 
 ![image](https://user-images.githubusercontent.com/79100627/191637103-5c3a9efb-c5f3-4ee2-bcb8-9fb2f331d779.png)
 
+## Angry IP Scanner 
 
+![image](https://user-images.githubusercontent.com/79100627/191638053-933b5af2-e8c2-41b0-853c-877f2088b197.png)
 
+1. Menu Bar - This contains dropdown lists that allow you to save, change view options, adjust settings and get help. 
+2. IP Range - This field lists the IP address range to be scanned 
+3. IP Feeder menu - This dropdown menu lists the different IP sources. You can type the range or wtich to a text file with IP address in it or choose a random IP.
+4. Preferences - This button contains additional settings
+5. Hostname - This field contains the target hostname 
+6. IP Source - This button allows you to choose IP addresses from the network adapters in the computer
+7. Netmasdk - This dropdown menu allows you to choose the subnet mask for the intended target range 
+8. Start - This button starts the scanning process
+9. Fetchers - This button provides options to recover different types of data from the scanned hosts.
+10. List - This pane lists the results of the scan in column view 
 
+Scan address 192.168.0.0 and 192.168.0.255 in the second IP Range field. Once you are done you can click the Fetchers button in 3 
+![image](https://user-images.githubusercontent.com/79100627/191638531-2f5ea904-fc15-4f6e-8ccb-f4c48b166173.png)
+
+The Fetchers window will open. The items listed in the left pane, seen in item 1, are the default and currently selected fetchers. You can use the buttons in item 2 to select, remove, reorder and configure the different fetchers. The pane on the right seen in item 3, contains the available fetchers. The results for each fetcher will appear as additional columns in the main GUI results pane
+
+![image](https://user-images.githubusercontent.com/79100627/191638836-c767dae3-6cc5-4e0a-8593-5a855fa4c39c.png)
+
+The last thing we will do is select the subnet mask. To do this, click the dropdown arrow Netmask as seen in the item 1 below. Select /24 from the dropdown 
+![image](https://user-images.githubusercontent.com/79100627/191639001-9886416f-6a77-46e1-887b-0768c231d1d3.png)
+
+Let's look at the result. We will look at 1 of the live systems. As you can see, the live hosts appear as a blue circle in the IP column. Let us scroll down using the arrow or scroll bar, seen in item 1, until you get to the IP address 192.168.0.30 
+![image](https://user-images.githubusercontent.com/79100627/191641554-a3c955e4-42fb-4669-af91-2f4144688206.png)
+
+![image](https://user-images.githubusercontent.com/79100627/191641769-96dbfcc1-89a6-4b43-aaa4-9d195e079abb.png)
+
+The IP address details window will appear and list all the information that the fetchers collected from the system. The important thing to note in this window is the response time of the ping. This one is 0ms and can give you an idea of the workstation's location on the network. The hostname field provides the name for the system, and the Ports field indicates the open ports, The MAC address and Vendor fields provide the physical address of the network card and the possible manufacturer. Finally, the Filtered Ports field, also seen in item 3, will provide the list of ports that are monitored by a firewall or router. 
+
+## TCP and UDP packet Crafting using HPING3 
+
+Type ```hping3 -c 3 <IP address of the target machine>``` and press enter 
+
+![image](https://user-images.githubusercontent.com/79100627/191642407-f63c6a4a-2bde-461f-9cdc-1579afe87c9b.png)
+
+-c count means stop after sending ( and receiving) count response packets. so -c means that we will only send 3 packets to the target machine
+
+now let's scan the target machine ```hping3 -q --scan 1-3000 -s 192.168.0.20 | grep -v 'Not res'```
+
+![image](https://user-images.githubusercontent.com/79100627/191642731-8bb2c34a-f01c-43f3-ba02-708268cb1c6d.png)
+
+--scan parameter defines the port range to scan and -S represents SYN flag
+
+Now let's perform UDP packet crafting. Packet crafting is a technique that allows the Pen Tester to probe firewall rule sets and find entry points into a target system or network. This is done by manually generating packets to test the network devices instead of using exisiting network traffic 
+
+```hping3 192.168.0.20 --udp --rand-source --data 500``` 
+
+![image](https://user-images.githubusercontent.com/79100627/191643025-d06ea420-25d3-425c-ae50-be3a66ff0646.png)
+
+![image](https://user-images.githubusercontent.com/79100627/191643256-4b8713b8-0c93-4d3d-a2a6-82137f504e52.png)
+
+Next we will send TCP SYN Request to the target machine. To start type
+```hping -S 192.168.0.20 -p 80 -c 5 ``` and press Enter 
+
+![image](https://user-images.githubusercontent.com/79100627/191643510-fc77da2c-851d-428d-982a-4ecbc19c8241.png)
+
+-s will perform a TCP SYN request on the target machine -p will pass the traffic through which port is assigned and -c is the count of the packet sent 
+
+![image](https://user-images.githubusercontent.com/79100627/191643630-9d069acd-a94b-40b7-ada5-816e364e3186.png)
+
+## Vulnerability Scanning 
+
+we will now perform vulnerability scan to see what kind of vulenrabilities we can identify on the hosts on this network. 
+
+```sudo nmap -p80,53,22 192.168.0.0/24 192.168.68.0/24 -oG Desktop/list.txt```
+![image](https://user-images.githubusercontent.com/79100627/191643913-72dcc26e-7cf8-4346-97f7-63049254c601.png)
+
+Scan is completed and let's see 
+
+![image](https://user-images.githubusercontent.com/79100627/191644010-a6a692b9-1b76-4e21-9c2a-aa876492d146.png)
+
+Enter command ```cat Desktop/list.txt | awk '/Up$/{print $2}' | cat >>Desktop/targets.txt``` This will parse only the IP addresses of the hosts that are up and save the results to a file on the Desktop
+
+![image](https://user-images.githubusercontent.com/79100627/191644292-a6e981cb-3b3a-4d16-9bfa-604edf536774.png)
+
+Next we will use Nikto to scan the hosts in our targets.txt file. To do this type ```nikto -h Desktop/targets.txt``` this scan will take some time to complete 
+
+![image](https://user-images.githubusercontent.com/79100627/191644577-10e83c90-4b69-4f20-87fa-f478062e2a33.png)
